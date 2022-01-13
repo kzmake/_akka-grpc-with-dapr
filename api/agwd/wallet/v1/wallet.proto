@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package agwd.wallet.v1;
+
+option java_multiple_files = true;
+option java_package = "io.github.kzmake.agwd.wallet.v1";
+option java_outer_classname = "WalletProto";
+option go_package = "github.com/kzmake/_akka-grpc-with-dapr/api/agwd/wallet/v1;wallet";
+
+import "google/api/annotations.proto";
+
+service WalletService {
+  rpc Create(CreateRequest) returns (CreateResponse);
+}
+
+message CreateRequest {}
+
+message CreateResponse {
+  Wallet wallet = 1;
+}
+
+message Wallet {
+  message Money {
+    int64 value = 1;
+  }
+
+  string id = 1;
+  Money balance = 2;
+}

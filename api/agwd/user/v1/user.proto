@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package agwd.user.v1;
+
+option java_multiple_files = true;
+option java_package = "io.github.kzmake.agwd.user.v1";
+option java_outer_classname = "UserProto";
+option go_package = "github.com/kzmake/_akka-grpc-with-dapr/api/agwd/user/v1;user";
+
+import "google/api/annotations.proto";
+
+service UserService {
+  rpc Create(CreateRequest) returns (CreateResponse) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "*"
+    };
+  }
+}
+
+message CreateRequest {
+  string name = 1;
+}
+
+message CreateResponse {
+  User user = 1;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string blog_url = 3;
+  string email_address = 4;
+  string wallet_id = 5;
+}

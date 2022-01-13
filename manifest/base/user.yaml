@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+spec:
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "user"
+        dapr.io/app-protocol: "grpc"
+        dapr.io/app-port: "50051"
+        dapr.io/log-as-json: "true"
+        dapr.io/log-level: "error"
+        dapr.io/config: "dapr-config"
+    spec:
+      containers:
+        - name: user
+          image: ghcr.io/kzmake/agwd/user:latest
+          envFrom:
+            - secretRef:
+                name: service-secret
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 32Mi
+          ports:
+            - name: grpc
+              containerPort: 50051
+          livenessProbe:
+            tcpSocket: { port: 50051 }
+            initialDelaySeconds: 10
+          readinessProbe:
+            tcpSocket: { port: 50051 }
+            initialDelaySeconds: 5
+            failureThreshold: 1
+            periodSeconds: 1
+        - name: scaler
+          image: kzmake/scaler:latest
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 32Mi
+          ports:
+            - name: scaler
+              containerPort: 50000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+spec:
+  type: ClusterIP
+  selector:
+    app: user
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+    - name: scaler
+      port: 50000
+      targetPort: 50000

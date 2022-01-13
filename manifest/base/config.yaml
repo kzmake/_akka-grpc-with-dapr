@@ -1,0 +1,21 @@
+---
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: dapr-config
+spec:
+  features:
+    - name: proxy.grpc
+      enabled: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: service-secret
+stringData: {}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gateway-secret
+stringData: {}

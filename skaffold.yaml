@@ -1,0 +1,90 @@
+---
+apiVersion: skaffold/v2beta19
+kind: Config
+metadata:
+  name: dapr
+deploy:
+  helm:
+    releases:
+      - name: dapr
+        repo: https://dapr.github.io/helm-charts
+        remoteChart: dapr
+        version: "1.5.1"
+        namespace: dapr-system
+        createNamespace: true
+        wait: true
+---
+apiVersion: skaffold/v2beta26
+kind: Config
+metadata:
+  name: app
+build:
+  local:
+    useBuildkit: true
+  artifacts:
+    - image: ghcr.io/kzmake/agwd/user
+      context: ./backend
+      custom:
+        buildCommand: |
+          #!/usr/bin/env bash
+
+          IFS=':' read -ra imgArgs <<< "$IMAGE"; PACKAGE_NAME=${imgArgs[0]}; VERSION=${imgArgs[1]}
+          sbt ";project user ;set Docker / version := \"$VERSION\" ;Docker / publishLocal"
+        dependencies:
+          paths:
+            - "**/*.scala"
+            - "**/*.sbt"
+            - "**/*.conf"
+          ignore:
+            - "**/target"
+    - image: ghcr.io/kzmake/agwd/blog
+      context: ./backend
+      custom:
+        buildCommand: |
+          #!/usr/bin/env bash
+
+          IFS=':' read -ra imgArgs <<< "$IMAGE"; PACKAGE_NAME=${imgArgs[0]}; VERSION=${imgArgs[1]}
+          sbt ";project blog ;set Docker / version := \"$VERSION\" ;Docker / publishLocal"
+        dependencies:
+          paths:
+            - "**/*.scala"
+            - "**/*.sbt"
+            - "**/*.conf"
+          ignore:
+            - "**/target"
+    - image: ghcr.io/kzmake/agwd/gateway
+      context: ./gateway
+      docker:
+        dockerfile: ./gateway/Dockerfile
+deploy:
+  kustomize:
+    paths:
+      - manifest/overlays/localhost
+portForward:
+  - resourceType: service
+    resourceName: gateway
+    namespace: default
+    port: 8080
+    localPort: 8080
+  - resourceType: service
+    resourceName: user
+    namespace: default
+    port: 50000
+    localPort: 50000
+  - resourceType: service
+    resourceName: gateway-dapr
+    namespace: default
+    port: 50001
+    localPort: 50001
+  - resourceType: service
+    resourceName: user
+    namespace: default
+    port: 50051
+    localPort: 50051
+  - resourceType: service
+    resourceName: blog
+    namespace: default
+    port: 50051
+    localPort: 50052
+profiles:
+  - name: localhost

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package agwd.email.v1;
+
+option java_multiple_files = true;
+option java_package = "io.github.kzmake.agwd.email.v1";
+option java_outer_classname = "EmailProto";
+option go_package = "github.com/kzmake/_akka-grpc-with-dapr/api/agwd/blog/v1;blog";
+
+import "google/api/annotations.proto";
+
+service EmailService {
+  rpc Create(CreateRequest) returns (CreateResponse);
+}
+
+message CreateRequest {
+  string username = 1;
+}
+
+message CreateResponse {
+  Email email = 1;
+}
+
+message Email {
+  string address = 1;
+}

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package agwd.blog.v1;
+
+option java_multiple_files = true;
+option java_package = "io.github.kzmake.agwd.blog.v1";
+option java_outer_classname = "BlogProto";
+option go_package = "github.com/kzmake/_akka-grpc-with-dapr/api/agwd/blog/v1;blog";
+
+import "google/api/annotations.proto";
+
+service BlogService {
+  rpc Create(CreateRequest) returns (CreateResponse);
+}
+
+message CreateRequest {
+  string username = 1;
+}
+
+message CreateResponse {
+  Blog blog = 1;
+}
+
+message Blog {
+  string url = 1;
+}
